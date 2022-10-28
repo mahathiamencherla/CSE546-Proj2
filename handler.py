@@ -4,6 +4,7 @@ import pickle
 import os
 import ffmpeg
 import boto3
+import csv
 
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
@@ -37,15 +38,35 @@ def download_video_s3():
 		s3_client.download_file(Bucket=input_bucket, Key=file['Key'], Filename='download/'+name[0])
 		
 		os.system("ffmpeg -i " + str('download/'+name[0]) + " -r 1 " + str(frames_path) + "image-%3d.jpeg")
+		return name
 
-def get_item(name):
+def get_item(name,video_name):
 	# response = dynamodb_client.query(TableName=dynamodb_table, 
     # KeyConditionExpression=Key('name').eq(name))
 	# print(response)
 	response = dynamodb_client.scan(TableName=dynamodb_table,
     IndexName='name-index')
-	result = response['']
+	result = response
+	#print(response)
+	l=[]
+	for item in response['Items']:
+		if item['name']['S']==name:
+			print(item)
+			for i in item.values():
+				print(i)
+				if 'S' in i:
+					l.append(i['S'])
+	print(l)
+	filename=video_name.split(".")[0]+".csv"
+	print(filename)
+	
+	with open(filename, 'w', newline='') as myfile:
+		wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+		wr.writerow(l)
+	
+	response=s3_client.upload_file(filename, output_bucket, filename)
 	print(response)
+    
 
 def face_recognition_handler():	
 
@@ -55,7 +76,7 @@ def face_recognition_handler():
 	known_face_encodings = data['encoding']
 	
 	#downloading video from s3
-	download_video_s3()
+	video_name=download_video_s3()
 
 	#variable to store result
 	name = ""
@@ -74,7 +95,7 @@ def face_recognition_handler():
 				break
 
 	print("Result:", name)
-	get_item(name)
+	get_item(name,video_name[0])
     
 face_recognition_handler()
 # download_video_s3()
