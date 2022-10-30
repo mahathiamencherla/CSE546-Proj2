@@ -51,11 +51,11 @@ def get_item(name,video_name):
 	filename=video_name.split(".")[0]+".csv"
 	print("File name:", filename, video_name)
 	
-	with open(filename, 'w', newline='') as myfile:
+	with open('/tmp/'+filename, 'w', newline='') as myfile:
 		wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 		wr.writerow(value_list)
 	
-	response=s3_client.upload_file(filename, output_bucket, filename)
+	response=s3_client.upload_file('/tmp/'+filename, output_bucket, filename)
 	print("upload response: ", response)
 
 	# clear frames
