@@ -1,36 +1,45 @@
 from boto3 import client as boto3_client
 import os
 
-input_bucket = "546proj2"
-output_bucket = "546proj2output"
+input_bucket = "proj2-input-bucket"
+output_bucket = "proj2-output-bucket"
 test_cases = "test_cases/"
+
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+
+s3_client = boto3_client('s3',
+                         aws_access_key_id=AWS_ACCESS_KEY_ID,
+                         aws_secret_access_key= AWS_SECRET_ACCESS_KEY)
+
 
 def clear_input_bucket():
 	global input_bucket
-	s3 = boto3_client('s3')
-	list_obj = s3.list_objects_v2(Bucket=input_bucket)
+	# s3 = s3_client('s3')
+	list_obj = s3_client.list_objects_v2(Bucket=input_bucket)
 	try:
 		for item in list_obj["Contents"]:
 			key = item["Key"]
-			s3.delete_object(Bucket=input_bucket, Key=key)
+			s3_client.delete_object(Bucket=input_bucket, Key=key)
 	except:
 		print("Nothing to clear in input bucket")
 	
 def clear_output_bucket():
 	global output_bucket
-	s3 = boto3_client('s3')
-	list_obj = s3.list_objects_v2(Bucket=output_bucket)
+	# s3 = boto3_client('s3')
+	list_obj = s3_client.list_objects_v2(Bucket=output_bucket)
 	try:
 		for item in list_obj["Contents"]:
 			key = item["Key"]
-			s3.delete_object(Bucket=output_bucket, Key=key)
+			s3_client.delete_object(Bucket=output_bucket, Key=key)
 	except:
 		print("Nothing to clear in output bucket")
 
 def upload_to_input_bucket_s3(path, name):
 	global input_bucket
-	s3 = boto3_client('s3')
-	s3.upload_file(path + name, input_bucket, name)
+	# s3 = boto3_client('s3')
+	s3_client.upload_file(path + name, input_bucket, name)
+
 	
 	
 def upload_files(test_case):	
